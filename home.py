@@ -51,7 +51,7 @@ def md_simulation(number_of_particles, temperature, box_length, number_of_steps,
 if st.button('generate'):
     system, positions = md_simulation(number_of_particles, temperature, box_length, number_of_steps, 100)
 else:
-    system, positions = md_simulation(20, 1000, 100, 100, 100)
+    system, positions = md_simulation(number_of_particles, temperature, box_length, 100, 100)
 
 
 #=================================================
