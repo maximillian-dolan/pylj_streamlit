@@ -10,7 +10,7 @@ options = st.popover('options')
 with options:
     number_of_particles = st.slider('Number of particles', min_value = 1, max_value = 50, step = 1, value = 20)
     box_length = st.slider('Box Length', min_value = 5, max_value = 20, step = 1, value = 100)
-    number_of_steps = st.slider('Number of steps', min_value = 100, max_value = 5000, step = 100, value = 5000)
+    number_of_steps = st.slider('Number of steps', min_value = 100, max_value = 5000, step = 100, value = 2500)
     temperature = st.slider('Temperature', min_value = 0, max_value = 1500, step = 100, value = 1000)
 
 def md_simulation(number_of_particles, temperature, box_length, number_of_steps, sample_frequency):
