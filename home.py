@@ -62,7 +62,7 @@ animation = px.scatter(positions,
                  x = 'xposition',
                  y = 'yposition',
                  animation_frame = 'cycle',
-                 animation_group = 'particle',
+                 #animation_group = 'particle',
                  range_x = [0, box_length*1e-10],
                  range_y = [0, box_length*1e-10]
                  )
