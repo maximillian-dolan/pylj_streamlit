@@ -4,9 +4,13 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
-def mc_simulation(number_of_particles, temperature, box_length, number_of_steps, sample_frequency):
+def mc_simulation(number_of_particles, temperature, box_length, number_of_steps, sample_frequency, num_constants):
+        # Get constants
+    long_constants = [[1.363e-134, 9.273e-78],[1.365e-130, 9.278e-77],[1.368e-130, 9.278e-77], [1.363e-134, 3e-77], [1.363e-134, 8e-77]]
+    colours = ['green','red','blue','black','orange']
+    constants = long_constants[:num_constants]
     # Initialise the system placing the particles on a square lattice
-    system = mc.initialise(number_of_particles, temperature, box_length, 'square')
+    system = mc.initialise(number_of_particles, temperature, box_length, 'square', constants = constants)
     # This initialises the dataframe
     positions = pd.DataFrame({})
     current_positions = {}
@@ -40,8 +44,15 @@ def mc_simulation(number_of_particles, temperature, box_length, number_of_steps,
             current_positions['particle'] = np.arange(number_of_particles)
             current_positions['velocity'] = np.sqrt(system.particles['xvelocity']**2 + system.particles['yvelocity']**2)
             current_positions['energy'] = system.particles['energy']
+            current_positions['types'] = system.particles['types']
             df = pd.DataFrame(current_positions)
             positions = pd.concat([positions, df], ignore_index=True)
+    # Get point sizes
+    sizes = np.array(system.point_sizes)
+    positions['types'] = positions['types'].astype(int)
+    # Map the sizes to the new 'size' column
+    positions['size'] = positions['types'].apply(lambda x: sizes[x])
+    positions['colour'] = positions['types'].apply(lambda x: colours[x])
     return system, positions
 
 def main():
@@ -52,11 +63,12 @@ def main():
         box_length = st.slider('Box Length', min_value = 5, max_value = 20, step = 1, value = 100)
         number_of_steps = st.slider('Number of steps', min_value = 10, max_value = 500, step = 10, value = 250)
         temperature = st.slider('Temperature', min_value = 0, max_value = 1500, step = 100, value = 1000)
+        num_constants = st.slider('Number of Types', min_value = 1, max_value = 5, step = 1, value = 2)
 
     if st.button('generate'):
-        system, positions = mc_simulation(number_of_particles, temperature, box_length, number_of_steps, 10)
+        system, positions = mc_simulation(number_of_particles, temperature, box_length, number_of_steps, 10, num_constants)
     else:
-        system, positions = mc_simulation(number_of_particles, temperature, box_length, 100, 10)
+        system, positions = mc_simulation(number_of_particles, temperature, box_length, 100, 10, num_constants)
 
     #=================================================
     #=================================================
@@ -67,11 +79,14 @@ def main():
                     y = 'yposition',
                     animation_frame = 'cycle',
                     animation_group = 'particle',
+                    size = 'size',
+                    color = 'colour',
                     range_x = [0, box_length*1e-10],
                     range_y = [0, box_length*1e-10]
                     )
 
     # Update animation axes to just be a box
+    animation.update_layout(showlegend = False)
     animation.update_yaxes(showgrid=False,
                         #showline = True,
                         #linewidth = 1,
