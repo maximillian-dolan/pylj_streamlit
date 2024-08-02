@@ -43,11 +43,9 @@ def mc_simulation(number_of_particles, temperature, box_length, number_of_steps,
             current_positions['yposition'] = system.particles['yposition']
             current_positions['particle'] = np.arange(number_of_particles)
             current_positions['velocity'] = np.sqrt(system.particles['xvelocity']**2 + system.particles['yvelocity']**2)
-            current_positions['energy'] = system.particles['energy']
             current_positions['types'] = system.particles['types']
             df = pd.DataFrame(current_positions)
             positions = pd.concat([positions, df], ignore_index=True)
-    # Get point sizes
     sizes = np.array(system.point_sizes)
     positions['types'] = positions['types'].astype(int)
     # Map the sizes to the new 'size' column
@@ -103,13 +101,10 @@ def main():
                         title_text = '')
     #=================================================
     #=================================================
-
-    energy_fig = px.bar(positions,
-                        x = 'particle',
-                        y = 'energy',
-                        animation_frame = 'cycle',
-                        animation_group = 'particle',
-                        range_y = [min(positions['energy']), max(positions['energy'])]
+    energies = {'x':np.arange(len(system.energy_sample)), 'y':system.energy_sample}
+    energy_fig = px.line(energies,
+                        x = 'x',
+                        y = 'y'
                         )
 
     col1,col2 = st.columns(2)
