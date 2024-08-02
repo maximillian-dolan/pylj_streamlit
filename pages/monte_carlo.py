@@ -106,7 +106,8 @@ def main():
                         x = 'x',
                         y = 'y'
                         )
-
+    energy_fig.update_xaxes(title_text = 'Step')
+    energy_fig.update_yaxes(title_text = 'Energy \J')
     col1,col2 = st.columns(2)
 
 
