@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 
 def mc_simulation(number_of_particles, temperature, box_length, number_of_steps, sample_frequency, num_constants):
-        # Get constants
+    # Get constants
     long_constants = [[1.363e-134, 9.273e-78],[1.365e-130, 9.278e-77],[1.368e-130, 9.278e-77], [1.363e-134, 3e-77], [1.363e-134, 8e-77]]
     colours = ['green','red','blue','black','orange']
     constants = long_constants[:num_constants]
@@ -36,7 +36,7 @@ def mc_simulation(number_of_particles, temperature, box_length, number_of_steps,
             system.reject()
         # Add this energy to the energy sample array
         system.mc_sample()
-        # At a given frequency sample the positions and plot
+        # At a given frequency sample the positions and add to dataframe
         if i % sample_frequency == 0:
             current_positions['cycle'] = [i]*number_of_particles
             current_positions['xposition'] = system.particles['xposition']
@@ -46,6 +46,7 @@ def mc_simulation(number_of_particles, temperature, box_length, number_of_steps,
             current_positions['types'] = system.particles['types']
             df = pd.DataFrame(current_positions)
             positions = pd.concat([positions, df], ignore_index=True)
+    # Get sizes and types of particles
     sizes = np.array(system.point_sizes)
     positions['types'] = positions['types'].astype(int)
     # Map the sizes to the new 'size' column
@@ -54,15 +55,17 @@ def mc_simulation(number_of_particles, temperature, box_length, number_of_steps,
     return system, positions
 
 def main():
+    # Create options menu
     options = st.popover('options')
-
     with options:
         number_of_particles = st.slider('Number of particles', min_value = 1, max_value = 50, step = 1, value = 20)
         box_length = st.slider('Box Length', min_value = 5, max_value = 20, step = 1, value = 100)
         number_of_steps = st.slider('Number of steps', min_value = 10, max_value = 500, step = 10, value = 250)
         temperature = st.slider('Temperature', min_value = 0, max_value = 1500, step = 100, value = 1000)
         num_constants = st.slider('Number of Types', min_value = 1, max_value = 5, step = 1, value = 2)
-
+            
+    # Create Generate button, since automatic generation will happen when any option is changed make this automatic
+    # generation only one frame so it is instant but lets you see the starting conditions
     if st.button('generate'):
         system, positions = mc_simulation(number_of_particles, temperature, box_length, number_of_steps, 10, num_constants)
     else:
@@ -72,6 +75,7 @@ def main():
     #=================================================
     #Creating animation
     #=================================================
+    # Create particle plot
     animation = px.scatter(positions,
                     x = 'xposition',
                     y = 'yposition',
@@ -101,6 +105,7 @@ def main():
                         title_text = '')
     #=================================================
     #=================================================
+    # Create static energy plot
     energies = {'x':np.arange(len(system.energy_sample)), 'y':system.energy_sample}
     energy_fig = px.line(energies,
                         x = 'x',
@@ -108,9 +113,9 @@ def main():
                         )
     energy_fig.update_xaxes(title_text = 'Step')
     energy_fig.update_yaxes(title_text = 'Energy \J')
+
+    # Use columns to put the two plots side by side
     col1,col2 = st.columns(2)
-
-
     with col1:
         st.plotly_chart(animation, use_container_width = True)
 
