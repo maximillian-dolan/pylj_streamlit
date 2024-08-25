@@ -11,12 +11,10 @@ def md_simulation(number_of_particles, temperature, box_length, number_of_steps,
     constants = long_constants[:num_constants]
     # Initialise the system
     system = md.initialise(number_of_particles, temperature, box_length, 'square', constants = constants)
-    # This This initialises the dataframe
+    # This initialises the dataframe
     positions = pd.DataFrame({})
     current_positions = {}
-
-    #sample_system = sample.MaxBolt(system)# Start at time 0
-    system.time = 0
+    system.time = 0 # Start at time 0
     # Begin the molecular dynamics loop
     for i in range(0, number_of_steps):
         # Run the equations of motion integrator algorithm, this 
@@ -30,7 +28,7 @@ def md_simulation(number_of_particles, temperature, box_length, number_of_steps,
         system.time += system.timestep_length
         system.step += 1
 
-        # At a given frequency sample the positions and plot the RDF
+        # At a given frequency sample the current positions and add to main dataframe
         if i % sample_frequency == 0 or i == 0: 
             current_positions['cycle'] = [i]*number_of_particles
             current_positions['xposition'] = system.particles['xposition']
@@ -50,8 +48,8 @@ def md_simulation(number_of_particles, temperature, box_length, number_of_steps,
     return system, positions
 
 def main():
+    # Create options drop-down menu
     options = st.popover('options')
-
     with options:
         number_of_particles = st.slider('Number of particles', min_value = 1, max_value = 50, step = 1, value = 20)
         box_length = st.slider('Box Length', min_value = 5, max_value = 20, step = 1, value = 100)
@@ -59,6 +57,8 @@ def main():
         temperature = st.slider('Temperature', min_value = 0, max_value = 1500, step = 100, value = 1000)
         num_constants = st.slider('Number of Types', min_value = 1, max_value = 5, step = 1, value = 2)
 
+    # Create Generate button, since automatic generation will happen when any option is changed make this automatic
+    # generation only one frame so it is instant but lets you see the starting conditions
     if st.button('generate'):
         system, positions = md_simulation(number_of_particles, temperature, box_length, number_of_steps, 100, num_constants)
     else:
@@ -68,6 +68,7 @@ def main():
     #=================================================
     #Creating animation
     #=================================================
+    # Creating particle plots
     animation = px.scatter(positions,
                     x = 'xposition',
                     y = 'yposition',
@@ -98,6 +99,7 @@ def main():
                         title_text = '')
     #=================================================
     #=================================================
+    # Create velocity graph
     velocity_fig = px.bar(positions,
                         x = 'particle',
                         y = 'velocity',
@@ -113,10 +115,8 @@ def main():
                         animation_group = 'particle',
                         range_y = [min(positions['energy']), max(positions['energy'])]
                         )
-
+    # Add columns to have the two plots side by side
     col1,col2 = st.columns(2)
-
-
     with col1:
         st.plotly_chart(animation, use_container_width = True)
 
